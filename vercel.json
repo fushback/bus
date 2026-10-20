@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "name": "safarhub-booking",
+  "framework": "angular",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/app/browser",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -1,0 +1,164 @@
+<div class="min-h-screen bg-slate-50/60 text-slate-800 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+  
+  @if (state.currentTab() === 'booking' || state.currentTab() === 'cars') {
+    @if (state.searchPageStep() === 'search') {
+      <!-- FIRST DESIGN: CLEAN MINIMAL SEARCH -->
+      <app-home-search />
+    } @else if (state.searchPageStep() === 'seats' && state.selectedTrip()) {
+      <!-- DEDICATED SEAT SELECTION & BUS DETAILS OFFCANVAS PAGE -->
+      <app-seat-layout />
+    } @else if (state.searchPageStep() === 'car-seats' && state.selectedSharedCarTrip()) {
+      <!-- DEDICATED CAR SEAT SELECTION & CAR DETAILS OFFCANVAS PAGE -->
+      <app-car-seat-layout />
+    } @else if (state.searchPageStep() === 'transport-seats' && state.selectedTransportTrip()) {
+      <!-- DEDICATED TRANSPORT SEAT SELECTION & DETAILS OFFCANVAS PAGE -->
+      <app-transport-seat-layout />
+    } @else if (state.searchPageStep() === 'boarding-dropping') {
+      <!-- DEDICATED BOARDING & DROPPING POINT SELECTION PAGE -->
+      <app-boarding-dropping />
+    } @else if (state.searchPageStep() === 'passenger-info') {
+      <!-- DEDICATED PASSENGER DETAILS & PAYMENT PAGE (STEP 3) -->
+      <app-passenger-info />
+    } @else {
+      <!-- NEXT PAGE: RESULTS & BUS / CAR / TRANSPORT SELECTION -->
+      <app-results-view />
+    }
+  } @else if (state.currentTab() === 'admin') {
+    <!-- DEDICATED ADMIN CONTROL CENTER PAGE -->
+    <div class="animate-fade-in">
+      <app-admin-view />
+    </div>
+  } @else {
+
+    <!-- Main Body Content Area -->
+    <main class="flex-1 pb-16">
+
+      <!-- Trip Section (Curated Holiday Tours & Getaways) -->
+      @if (state.currentTab() === 'trip') {
+        <div class="animate-fade-in">
+          <app-trip-view />
+        </div>
+      }
+
+      <!-- Database & CRUD Studio -->
+      @if (state.currentTab() === 'schema') {
+        <div class="animate-fade-in">
+          <app-schema-viewer />
+        </div>
+      }
+
+      <!-- .NET Core API Docs View -->
+      @if (state.currentTab() === 'dotnet') {
+        <div class="animate-fade-in">
+          <app-dotnet-viewer />
+        </div>
+      }
+
+      <!-- Unit Test Suite Runner -->
+      @if (state.currentTab() === 'tests') {
+        <div class="animate-fade-in">
+          <app-test-runner />
+        </div>
+      }
+
+      <!-- User Tickets & Bookings Manager -->
+      @if (state.currentTab() === 'tickets') {
+        <div class="animate-fade-in">
+          <app-ticket-view />
+        </div>
+      }
+
+    </main>
+
+    <!-- Modern Clean Minimal Footer for Secondary Views -->
+    <footer class="bg-white text-slate-600 text-xs py-10 mt-auto shadow-[0_-4px_20px_rgba(15,23,42,0.04)]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+        
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-[10px] bg-gradient-to-br from-[#f43f5e] to-[#f97316] text-white flex items-center justify-center shadow-sm">
+            <mat-icon class="text-lg leading-none text-white">directions_bus</mat-icon>
+          </div>
+          <div>
+            <span class="text-slate-900 font-normal text-sm block">red<span class="text-[#e11d48]">Bus</span> Platform</span>
+            <span class="text-[11px] text-slate-500">Bus · Car · Hotel · Curated Tour Trips</span>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-medium">
+          <button
+            type="button"
+            (click)="state.goToSearch(); state.currentTab.set('booking')"
+            class="text-slate-600 hover:text-[#e11d48] transition-colors cursor-pointer flex items-center space-x-1">
+            <mat-icon class="text-sm">home</mat-icon>
+            <span>Home</span>
+          </button>
+          <button
+            type="button"
+            (click)="state.currentTab.set('tickets')"
+            class="text-slate-600 hover:text-[#4338ca] transition-colors cursor-pointer flex items-center space-x-1">
+            <mat-icon class="text-sm">confirmation_number</mat-icon>
+            <span>Booking ({{ state.userBookings().length }})</span>
+          </button>
+          <button
+            type="button"
+            (click)="state.isCouponModalOpen.set(true)"
+            class="text-slate-600 hover:text-[#047857] transition-colors cursor-pointer flex items-center space-x-1">
+            <mat-icon class="text-sm">local_offer</mat-icon>
+            <span>Offer</span>
+          </button>
+          <button
+            type="button"
+            (click)="state.showToast('24x7 Customer Support: 1800-120-7332 • Live Chat Ready', 'info')"
+            class="text-slate-600 hover:text-[#e11d48] transition-colors cursor-pointer flex items-center space-x-1">
+            <mat-icon class="text-sm">support_agent</mat-icon>
+            <span>Help</span>
+          </button>
+          <button
+            type="button"
+            (click)="state.isAuthModalOpen.set(true)"
+            class="text-slate-600 hover:text-[#4338ca] transition-colors cursor-pointer flex items-center space-x-1">
+            <mat-icon class="text-sm">person</mat-icon>
+            <span>Profile</span>
+          </button>
+        </div>
+
+        <div class="text-[11px] text-slate-400">
+          <span>© 2026 redBus · Verified Booking Network</span>
+        </div>
+
+      </div>
+    </footer>
+  }
+
+  <!-- Modals -->
+  <app-checkout-modal />
+  <app-auth-modal />
+  <app-coupon-modal />
+  <app-filter-modal />
+
+  <!-- Toast Notification System (Flat UI) -->
+  @if (state.toastMessage(); as toast) {
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-up w-auto max-w-[92vw] sm:max-w-md pointer-events-none">
+      <div
+        class="pointer-events-auto px-4 py-3 rounded-2xl flex items-center justify-center space-x-2.5 text-xs sm:text-sm font-normal border transition-all text-center"
+        [class.bg-slate-900]="toast.type === 'info'"
+        [class.text-white]="toast.type === 'info'"
+        [class.border-slate-800]="toast.type === 'info'"
+        [class.bg-emerald-600]="toast.type === 'success'"
+        [class.text-white]="toast.type === 'success'"
+        [class.border-emerald-500]="toast.type === 'success'"
+        [class.bg-amber-500]="toast.type === 'warning'"
+        [class.text-slate-950]="toast.type === 'warning'"
+        [class.border-amber-400]="toast.type === 'warning'"
+        [class.bg-rose-600]="toast.type === 'error'"
+        [class.text-white]="toast.type === 'error'"
+        [class.border-rose-500]="toast.type === 'error'">
+        <mat-icon class="text-lg leading-none shrink-0 flex items-center justify-center">
+          {{ toast.type === 'success' ? 'check_circle' : toast.type === 'warning' ? 'warning' : toast.type === 'error' ? 'error' : 'info' }}
+        </mat-icon>
+        <span class="leading-tight">{{ toast.text }}</span>
+      </div>
+    </div>
+  }
+
+</div>
