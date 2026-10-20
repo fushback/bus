@@ -22,18 +22,18 @@ import {BookingState} from '../../services/booking-state';
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
       <!-- Phase 2 Banner -->
-      <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-zinc-950 text-white rounded-3xl p-6 sm:p-8  border border-white/10">
+      <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-zinc-950 text-white rounded-3xl p-6 sm:p-8 border border-white/10">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div class="space-y-3">
-            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-normal uppercase tracking-wider">
-              <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
-              <span>Phase 2: Complete .NET Core 9.0 Web API & Supabase Connection</span>
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-normal uppercase tracking-wider">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span>Hosted Environment: Angular Frontend Only</span>
             </div>
             <h1 class="text-2xl sm:text-4xl font-normal tracking-tight">
-              Backend Architecture & Single-Project Integration
+              Angular Hosted Application & C# Backend Reference
             </h1>
             <p class="text-zinc-300 text-sm sm:text-base max-w-3xl leading-relaxed">
-              Complete, production-grade .NET Core Web API with Entity Framework Core (Npgsql), Supabase PostgreSQL, Supabase Auth JWT validation, 5-minute seat locking concurrency, and unified Angular hosting.
+              Note: This live environment hosts <strong>only the Angular application</strong>. No .NET Core C# API code or backend service is hosted or deployed on this server. Below is the reference architecture for optional self-hosted .NET integration.
             </p>
           </div>
 

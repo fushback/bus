@@ -7810,7 +7810,9 @@ export class AdminView {
 
   copyTextToClipboard(text: string, label: string) {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(text).catch(() => {});
+      navigator.clipboard.writeText(text).catch(() => {
+        // clipboard access suppressed
+      });
     }
     this.state.showToast(`${label} copied to clipboard!`, 'success');
   }
@@ -7829,7 +7831,7 @@ export class AdminView {
       `[GitHub API] Connecting to https://github.com/${owner}/${repo} (branch: ${branch})...`,
     ]);
 
-    type PushResponse = {
+    interface PushResponse {
       pushed?: boolean;
       requiresOAuth?: boolean;
       permissionError?: boolean;
