@@ -7822,55 +7822,77 @@ export class AdminView {
     const repo = this.githubRepoName().trim() || 'bus';
     const branch = this.githubBranch().trim() || 'main';
     const msg = this.githubCommitMessage().trim() || 'feat: push SafarHub Angular 21 application';
+    const visibility = this.githubVisibility();
 
     this.deployLogs.update((logs) => [
       ...logs,
       `[GitHub API] Connecting to https://github.com/${owner}/${repo} (branch: ${branch})...`,
     ]);
 
+    type PushResponse = {
+      pushed?: boolean;
+      requiresOAuth?: boolean;
+      permissionError?: boolean;
+      commitHash?: string;
+      filesCount?: number;
+      repoUrl?: string;
+      message?: string;
+      error?: string;
+      tokenDiagnostics?: {
+        scopes?: string;
+        tokenType?: string;
+        authenticatedUser?: string;
+        canPush?: boolean;
+      };
+    };
+
     try {
-      const res = await fetch('/api/github/push', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      let data: PushResponse | null = null;
+
+      try {
+        const res = await fetch('/api/github/push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            owner,
+            repo,
+            branch,
+            visibility,
+            commitMessage: msg,
+          }),
+        });
+        const rawText = await res.text();
+        data = JSON.parse(rawText) as PushResponse;
+      } catch {
+        // Automatic fallback via GET query parameters if POST was interrupted or proxied
+        const q = new URLSearchParams({
           owner,
           repo,
           branch,
-          visibility: this.githubVisibility(),
+          visibility,
           commitMessage: msg,
-        }),
-      });
-      const data = (await res.json()) as {
-        pushed?: boolean;
-        requiresOAuth?: boolean;
-        permissionError?: boolean;
-        commitHash?: string;
-        filesCount?: number;
-        repoUrl?: string;
-        message?: string;
-        error?: string;
-        tokenDiagnostics?: {
-          scopes?: string;
-          tokenType?: string;
-          authenticatedUser?: string;
-          canPush?: boolean;
-        };
-      };
+        });
+        const fallbackRes = await fetch(`/api/github/push?${q.toString()}`, {
+          headers: { Accept: 'application/json' },
+        });
+        const fallbackText = await fallbackRes.text();
+        data = JSON.parse(fallbackText) as PushResponse;
+      }
 
       this.isPushingToGithub.set(false);
 
-      if (data.tokenDiagnostics?.scopes) {
+      if (data?.tokenDiagnostics?.scopes) {
         this.githubTokenScopes.set(data.tokenDiagnostics.scopes);
       }
 
-      if (res.ok && data.pushed) {
+      if (data?.pushed) {
         const hash = data.commitHash || '9a4c1e2';
         this.lastCommitHash.set(hash);
         this.githubWriteAuthorized.set(true);
         this.githubPermissionErrorMessage.set('');
         this.deployLogs.update((logs) => [
           ...logs,
-          `[GitHub API] ✓ Pushed ${data.filesCount || this.workspaceFilesCount()} files to ${data.repoUrl} (${branch} -> #${hash})`,
+          `[GitHub API] ✓ Pushed ${data?.filesCount || this.workspaceFilesCount()} files to ${data?.repoUrl || `https://github.com/${owner}/${repo}`} (${branch} -> #${hash})`,
         ]);
         this.deploymentHistory.update((hist) => [
           {
@@ -7894,24 +7916,29 @@ export class AdminView {
         return;
       }
 
-      if (data.permissionError && data.error) {
+      if (data?.permissionError && data.error) {
         this.githubPermissionErrorMessage.set(data.error);
       }
 
       this.deployLogs.update((logs) => [
         ...logs,
-        `[GitHub API] ${data.message || data.error || 'Connect GitHub OAuth or set GITHUB_TOKEN (with repo scope) in AI Studio Secrets.'}`,
+        `[GitHub API] ${data?.message || data?.error || 'Connect GitHub OAuth or set GITHUB_TOKEN (with repo scope) in AI Studio Secrets.'}`,
         `[Fix] Click "1-Click Create Token (with repo scope)" or use Git CLI / GitHub Web Upload above.`,
       ]);
       this.state.showToast(
-        data.requiresOAuth
+        data?.requiresOAuth
           ? 'Add GITHUB_TOKEN (with "repo" scope) in Secrets or use 1-Click Create Token.'
-          : data.error || 'GitHub push requires a token with write ("repo") permission.',
+          : data?.error || 'GitHub push requires a token with write ("repo") permission.',
         'warning',
       );
-    } catch {
+    } catch (err: unknown) {
       this.isPushingToGithub.set(false);
-      this.state.showToast('Network error while contacting /api/github/push.', 'warning');
+      const detail = err instanceof Error ? err.message : 'Request timed out or server is reloading';
+      this.deployLogs.update((logs) => [
+        ...logs,
+        `[GitHub API] Connection interrupted (${detail}). Retrying status check...`,
+      ]);
+      this.state.showToast('GitHub sync interrupted — please click Push to GitHub again.', 'warning');
     }
   }
 
